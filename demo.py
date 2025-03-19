@@ -4,6 +4,7 @@ import random
 
 st.title("Raise Field Inspector")
 
+# File Uploader
 uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "png", "heic"])
 
 loading_messages = [
@@ -15,26 +16,37 @@ loading_messages = [
     "Processing... Meanwhile, grab a coffee ☕"
 ]
 
-if uploaded_file is not None:
-    st.write("Uplaoding in average should take about 30 seconds.. Depending on field size it can be longer or shorter.")
+# Initialize session state variables
+if "upload_complete" not in st.session_state:
+    st.session_state.upload_complete = False
+
+if uploaded_file is not None and not st.session_state.upload_complete:
+    st.write("Uploading should take about 30 seconds. Depending on field size, it can be longer or shorter.")
     progress_bar = st.progress(0)
     status_text = st.empty()
+
     for i in range(101):
-        time.sleep(0.15)  
+        time.sleep(0.15)
         progress_bar.progress(i)
         if i % 20 == 0:
             status_text.write(random.choice(loading_messages))
+
     st.success("Upload complete! 🎉")
+    st.session_state.upload_complete = True  # Mark upload as completed
+
+if st.session_state.upload_complete:
     col1, col2 = st.columns(2)
+
     with col1:
         st.write("### Select your crop")
         option = st.selectbox("Choose a crop:", ["Rice", "Winter wheat", "Corn", "Vineyard", "Potatoes", "Herbs", "Onion"])
+
     with col2:
         st.write("### Select type of Processing you want")
-        st.checkbox("Nitrate Content")
-        st.checkbox("Weeds")
-        st.checkbox("Pests")
-        st.checkbox("Damages")
-        st.checkbox("All")
-    
+        if "processing_options" not in st.session_state:
+            st.session_state.processing_options = {"Nitrate Content": False, "Weeds": False, "Pests": False, "Damages": False, "All": False}
+
+        for key in st.session_state.processing_options:
+            st.session_state.processing_options[key] = st.checkbox(key, st.session_state.processing_options[key])
+
     st.button("Start Processing")
