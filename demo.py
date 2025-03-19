@@ -2,7 +2,7 @@ import streamlit as st
 import time
 import random
 
-st.title("Mocked Image Upload")
+st.title("Raise Field Inspector")
 
 uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "png", "heic"])
 
