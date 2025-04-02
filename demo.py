@@ -1,6 +1,7 @@
 import streamlit as st
 import time
 import random
+import pandas as pd
 
 st.title("Raise Field Inspector")
 
@@ -39,14 +40,58 @@ if st.session_state.upload_complete:
 
     with col1:
         st.write("### Select your crop")
-        option = st.selectbox("Choose a crop:", ["Rice", "Winter wheat", "Corn", "Vineyard", "Potatoes", "Herbs", "Onion"])
+        option = st.selectbox("Choose a crop:", ["Winter Wheat", "Rice", "Corn", "Vineyard", "Potatoes", "Herbs", "Onion"])
 
     with col2:
-        st.write("### Select type of Processing you want")
-        if "processing_options" not in st.session_state:
-            st.session_state.processing_options = {"Nitrate Content": False, "Weeds": False, "Pests": False, "Damages": False, "All": False}
+        st.write("###  Processing")
+        processing_options = ["Nitrate Content", "Water", "Weeds", "Pests", "Damages", "All"]
+        selected_option = st.selectbox("Choose a processing type:", processing_options, index=0)
 
-        for key in st.session_state.processing_options:
-            st.session_state.processing_options[key] = st.checkbox(key, st.session_state.processing_options[key])
+    html_file_path = "heatmap.html"
 
-    st.button("Start Processing")
+    if st.button("Process"):
+        try:
+            with open(html_file_path, "r", encoding="utf-8") as file:
+                html_content = file.read()
+
+            # Embed the HTML content inside Streamlit
+            st.components.v1.html(html_content, height=600, scrolling=True)
+            main_data = {
+        "Crop": ["Winter wheat"],
+        "Processing": ["All"],
+        "Type": ["Drone"],
+        "Total Hectares": [9],
+        "Total Analyed": [4],
+        "Growth Month": ["3rd"],
+        "Location": ["Bayern, Germany"],
+        "Upcoming Weather Conditions": ["Seems to rise, please take care of water. There might be a storm approaching, please make sure your crops are insured."]
+    }
+            def style_df(df):
+                return df.style.set_properties(**{
+                    'text-align': 'center',
+                    'word-wrap': 'break-word'
+                }).set_table_styles([{'selector': 'th', 'props': [('text-align', 'center')]}])
+            df_main = pd.DataFrame(main_data)
+            
+            st.write("### Inspection Results")
+            st.markdown(df_main[['Crop', 'Processing', "Location", 'Growth Month']].to_html(escape=False, index=False, justify="left"), unsafe_allow_html=True)
+            st.write("### Type & Hectares")
+            st.markdown(df_main[['Type', 'Total Hectares']].to_html(escape=False, index=False, justify="left"), unsafe_allow_html=True)
+            st.write("### Weather Forecast")
+            st.markdown(df_main[['Upcoming Weather Conditions']].to_html(escape=False, index=False, justify="left"), unsafe_allow_html=True)
+
+
+        # Display damages as a separate sub-table
+            damage_data = [
+            {"Type": "Nitrate", "Area Affected": "1 ha", "Remedy": "Apply more after consulting expert"},
+            {"Type": "Water Content", "Area Affected": "2 ha", "Remedy": "Addition to nitrate water content seems lacking. If it was a mistake please check nitrate content."},
+            {"Type": "Weed", "Area Affected": "None", "Remedy": "None"}
+        ]
+            df_damages = pd.DataFrame(damage_data)
+            st.write("### Damage Report")
+            st.dataframe(df_damages, hide_index=True)
+
+
+        except FileNotFoundError:
+            st.error("Error: The map file was not found. Please generate the map first.")
+
