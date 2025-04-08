@@ -40,12 +40,23 @@ if st.session_state.upload_complete:
 
     with col1:
         st.write("### Select your crop")
-        option = st.selectbox("Choose a crop:", ["Winter Wheat", "Rice", "Corn", "Vineyard", "Potatoes", "Herbs", "Onion"])
+        crop_options = ["Winter Wheat", "Rice (disabled)", "Corn (disabled)", "Vineyard (disabled)", 
+                        "Potatoes (disabled)", "Herbs (disabled)", "Onion (disabled)"]
+        selected_crop = st.selectbox("Choose a crop:", crop_options, index=0)
+    
+        if selected_crop != "Winter Wheat":
+            st.warning("Only 'Winter Wheat' is currently supported.")
+            st.stop()
 
     with col2:
-        st.write("###  Processing")
-        processing_options = ["Nitrate Content", "Water", "Weeds", "Pests", "Damages", "All"]
-        selected_option = st.selectbox("Choose a processing type:", processing_options, index=0)
+        st.write("### Processing")
+        processing_options = ["All", "Nitrate Content (disabled)", "Water (disabled)", "Weeds (disabled)", 
+                            "Pests (disabled)", "Damages (disabled)"]
+        selected_processing = st.selectbox("Choose a processing type:", processing_options, index=0)
+
+        if selected_processing != "All":
+            st.warning("Only 'All' is currently supported.")
+            st.stop()
 
     html_file_path = "heatmap.html"
 
