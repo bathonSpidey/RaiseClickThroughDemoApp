@@ -13,7 +13,14 @@ st.title("🌾 Raise Field Inspector")
 
 # ---------------- STEP 1: UPLOAD ----------------
 if st.session_state.step == "upload":
+
+    
     st.subheader("Step 1: Upload Field Image")
+    st.markdown("""
+    Welcome to the **Raise Field Inspector** demo app. This simulation provides a preview of what a real inspection system might look like for your crops.
+
+    Please follow the steps below to upload an image (any image) and process a demo result.
+    """)
 
     uploaded_file = st.file_uploader("📷 Upload an image (simulation only)", type=["jpg", "png", "heic"])
 
