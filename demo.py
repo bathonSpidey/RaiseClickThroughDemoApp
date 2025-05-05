@@ -3,107 +3,119 @@ import time
 import random
 import pandas as pd
 
-st.title("Raise Field Inspector")
+st.set_page_config(page_title="Raise Field Inspector", layout="wide")
 
-# File Uploader
-uploaded_file = st.file_uploader("Choose any image from your gallery (It is a simulation)...", type=["jpg", "png", "heic"])
+# Initialize session state
+if "step" not in st.session_state:
+    st.session_state.step = "upload"
 
-loading_messages = [
-    "This is a simulation of the real app 🌾",
-    "We will cater the app according to your crops and needs 🌱",
-    "In general processing it takes about 2 minutes per hectare to get the initial results 🍎",
-    "With different processing needs this can take longer 🚀",
-    "Processing... Meanwhile, grab a coffee ☕"
-]
+st.title("🌾 Raise Field Inspector")
 
-# Initialize session state variables
-if "upload_complete" not in st.session_state:
-    st.session_state.upload_complete = False
+# ---------------- STEP 1: UPLOAD ----------------
+if st.session_state.step == "upload":
+    st.subheader("Step 1: Upload Field Image")
 
-if uploaded_file is not None and not st.session_state.upload_complete:
-    st.write("Uploading should take about 30 seconds to uplaod 1 hectare images. Here we are simulating with only 1 image taking it as 1 hectare.")
-    progress_bar = st.progress(0)
-    status_text = st.empty()
+    uploaded_file = st.file_uploader("📷 Upload an image (simulation only)", type=["jpg", "png", "heic"])
 
-    for i in range(101):
-        time.sleep(0.15)
-        progress_bar.progress(i)
-        if i % 20 == 0:
-            status_text.write(random.choice(loading_messages))
+    if uploaded_file:
+        st.info("Simulating upload (approx. 30 seconds per hectare)...")
+        progress_bar = st.progress(0)
+        status_text = st.empty()
 
-    st.success("Upload complete! 🎉")
-    st.session_state.upload_complete = True  # Mark upload as completed
+        loading_messages = [
+            "Simulating processing... 🌾",
+            "Tailoring to your crops and needs 🌱",
+            "Usually 2 mins per hectare in real case 🍎",
+            "Please wait... ☕",
+        ]
 
-if st.session_state.upload_complete:
+        for i in range(101):
+            time.sleep(0.05)
+            progress_bar.progress(i)
+            if i % 25 == 0:
+                status_text.write(random.choice(loading_messages))
+
+        st.success("✅ Upload complete!")
+        st.session_state.step = "analysis"  # Move to next step
+        st.rerun()  # Refresh UI to show next step
+
+# ---------------- STEP 2: ANALYSIS ----------------
+if st.session_state.step == "analysis":
+    st.subheader("Step 2: Select Crop and Processing")
+
     col1, col2 = st.columns(2)
 
     with col1:
-        st.write("### Select your crop")
-        crop_options = ["Winter Wheat", "Rice (not available)", "Corn (not available)", "Vineyard (not available)", 
-                        "Potatoes (not available)", "Herbs (not available)", "Onion (not available)"]
-        selected_crop = st.selectbox("Choose a crop:", crop_options, index=0)
-    
+        crop_options = [
+            "Winter Wheat", 
+            "Rice (coming soon)", 
+            "Corn (coming soon)"
+        ]
+        selected_crop = st.selectbox("Select your crop", crop_options, index=0)
+
         if selected_crop != "Winter Wheat":
-            st.warning("Only 'Winter Wheat' is currently supported.")
+            st.warning("Only Winter Wheat is supported currently.")
             st.stop()
 
     with col2:
-        st.write("### Processing")
-        processing_options = ["All", "Nitrate Content (not available)", "Water (not available)", "Weeds (not available)", 
-                            "Pests (not available)", "Damages (not available)"]
-        selected_processing = st.selectbox("Choose a processing type:", processing_options, index=0)
+        processing_options = [
+            "All", 
+            "Nitrate (coming soon)", 
+            "Water (coming soon)"
+        ]
+        selected_processing = st.selectbox("Select processing type", processing_options, index=0)
 
         if selected_processing != "All":
-            st.warning("Only 'All' is currently supported.")
+            st.warning("Only 'All' processing is available.")
             st.stop()
 
-    html_file_path = "heatmap.html"
+    if st.button("🔍 Process Field"):
+        st.session_state.step = "results"
+        st.rerun()
 
-    if st.button("Process"):
-        
-        try:
-            with open(html_file_path, "r", encoding="utf-8") as file:
-                html_content = file.read()
+# ---------------- STEP 3: RESULTS ----------------
 
-            # Embed the HTML content inside Streamlit
-            st.components.v1.html(html_content, height=600, scrolling=True)
-            main_data = {
-        "Crop": ["Winter wheat"],
-        "Processing": ["All"],
-        "Type": ["Drone"],
-        "Total Hectares": [9],
-        "Total Analyed": [4],
-        "Growth Month": ["3rd"],
-        "Location": ["Bayern, Germany"],
-        "Upcoming Weather Conditions": ["Seems to rise, please take care of water. There might be a storm approaching, please make sure your crops are insured."]
-    }
-            def style_df(df):
-                return df.style.set_properties(**{
-                    'text-align': 'center',
-                    'word-wrap': 'break-word'
-                }).set_table_styles([{'selector': 'th', 'props': [('text-align', 'center')]}])
-            df_main = pd.DataFrame(main_data)
-            
-            st.write("### Inspection Results")
-            st.write("This is a demo result. In case of a real field detailed information with precautions will be shown in this area along with the map.")
-            st.markdown(df_main[['Crop', 'Processing', "Location", 'Growth Month']].to_html(escape=False, index=False, justify="left"), unsafe_allow_html=True)
-            st.write("### Type & Hectares")
-            st.markdown(df_main[['Type', 'Total Hectares']].to_html(escape=False, index=False, justify="left"), unsafe_allow_html=True)
-            st.write("### Weather Forecast")
-            st.markdown(df_main[['Upcoming Weather Conditions']].to_html(escape=False, index=False, justify="left"), unsafe_allow_html=True)
+if st.session_state.step == "results":
+    st.subheader("Step 3: Inspection Results")
 
+    try:
+        with open("heatmap.html", "r", encoding="utf-8") as file:
+            html_content = file.read()
 
-        # Display damages as a separate sub-table
-            damage_data = [
-            {"Type": "Nitrate", "Area Affected": "1 ha", "Remedy": "Apply more after consulting expert"},
-            {"Type": "Water Content", "Area Affected": "2 ha", "Remedy": "Addition to nitrate water content seems lacking. If it was a mistake please check nitrate content."},
-            {"Type": "Weed", "Area Affected": "None", "Remedy": "None"}
-        ]
-            df_damages = pd.DataFrame(damage_data)
-            st.write("### Damage Report")
-            st.dataframe(df_damages, hide_index=True)
+        st.markdown("#### Field Heatmap")
+        st.components.v1.html(html_content, height=600, scrolling=True)
 
+        main_data = {
+            "Crop": ["Winter Wheat"],
+            "Processing": ["All"],
+            "Type": ["Drone"],
+            "Total Hectares": [9],
+            "Total Analyzed": [4],
+            "Growth Month": ["3rd"],
+            "Location": ["Bavaria, Germany"],
+            "Upcoming Weather": [
+                "Rising temps expected. Water management recommended. Possible storms — ensure insurance coverage."
+            ]
+        }
 
-        except FileNotFoundError:
-            st.error("Error: The map file was not found. Please generate the map first.")
+        df_main = pd.DataFrame(main_data)
 
+        st.markdown("#### Field Overview")
+        st.dataframe(df_main[["Crop", "Processing", "Location", "Growth Month"]], hide_index=True)
+
+        st.markdown("#### Summary")
+        st.dataframe(df_main[["Type", "Total Hectares", "Total Analyzed"]], hide_index=True)
+
+        st.markdown("#### Weather Forecast")
+        st.info(df_main["Upcoming Weather"][0])
+
+        st.markdown("#### Damage Report")
+        df_damages = pd.DataFrame([
+            {"Type": "Nitrate", "Affected Area": "1 ha", "Recommendation": "Consult expert before applying more nitrate."},
+            {"Type": "Water", "Affected Area": "2 ha", "Recommendation": "Add water. Confirm nitrate levels."},
+            {"Type": "Weeds", "Affected Area": "None", "Recommendation": "None"}
+        ])
+        st.dataframe(df_damages, hide_index=True)
+
+    except FileNotFoundError:
+        st.error("Map file 'heatmap.html' not found.")
