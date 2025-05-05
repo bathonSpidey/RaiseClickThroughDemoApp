@@ -9,7 +9,28 @@ st.set_page_config(page_title="Raise Field Inspector", layout="wide")
 if "step" not in st.session_state:
     st.session_state.step = "upload"
 
-st.title("🌾 Raise Field Inspector")
+st.markdown("""
+    <style>
+        .main-title {
+            font-size: 40px;
+            font-weight: 700;
+            color: #4CAF50;
+            margin-bottom: 0;
+        }
+        .subtitle {
+            font-size: 18px;
+            color: #555;
+            margin-top: 0;
+        }
+        .centered {
+            text-align: center;
+        }
+    </style>
+    <div class="centered">
+    <h1 class="main-title">Raise Field Inspector</h1>
+    <p class="subtitle">AI-powered field diagnostics for smart agriculture</p>
+    </div>
+""", unsafe_allow_html=True)
 
 # ---------------- STEP 1: UPLOAD ----------------
 if st.session_state.step == "upload":
@@ -23,6 +44,8 @@ if st.session_state.step == "upload":
     """)
 
     uploaded_file = st.file_uploader("📷 Upload an image (simulation only)", type=["jpg", "png", "heic"])
+    if st.button("Try with a sample field image"):
+        uploaded_file = True
 
     if uploaded_file:
         st.info("Simulating upload (approx. 30 seconds per hectare)...")
